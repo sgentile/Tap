@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<head>
+	<title>Touch Events -  Tap</title>
+	<style>
+		button{
+			width: 300px;
+			height: 50px;
+		}
+		.green{
+			color:green;
+			font-size: 10pt;
+			font-weight: bold;
+		}
+		.yellow{
+			color:yellow;
+			font-size: 10pt;
+			font-weight: bold;
+		}
+
+		.red{
+			color:red;
+			font-size: 10pt;
+			font-weight: bold;
+		}
+	</style>
+</head>
+<body>
+	<button id="touchBtn">Touchable</button>
+	<h3>Events:</h3>
+		<a id="clearEvents" href="#">Clear</a>
+
+	<div id="showEvents"></div>
+	<hr/>
+	<script>
+		function log(text){
+			var showEventDiv = document.getElementById('showEvents');
+			showEventDiv.innerHTML += text + "<br/>";
+		}
+
+		var touchBtn = document.getElementById('touchBtn'),
+			clearEvents = document.getElementById('clearEvents'),
+			onTouchMove, onTouchEnd,
+			clickedElement, currentElement;
+
+		onTouchMove = function(evt){
+			log('onTouchMove');
+			touchBtn.className = "yellow";
+			currentElement = document.elementFromPoint(evt.pageX, evt.pageY);
+		};
+
+		onTouchEnd = function(evt){
+			log('onTouchEnd');
+			touchBtn.className = "red";
+
+			if(clickedElement === currentElement){
+				log('tap');
+			}
+
+			this.removeEventListener('touchmove', onTouchMove);
+			this.removeEventListener('touchend', onTouchEnd);
+		};
+
+		touchBtn.addEventListener('touchstart', function(evt){
+			log('touchstart');
+			touchBtn.className = "green";
+			clickedElement = this;
+			currentElement = this;
+
+			this.addEventListener('touchmove', onTouchMove);
+			this.addEventListener('touchend', onTouchEnd);
+		});
+
+		clearEvents.addEventListener('click', function(){
+			document.getElementById('showEvents').innerHTML = "";
+		});
+	</script>
+</body>
+</html>
+

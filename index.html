@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<head>
+	<title>Touch Events -  Tap</title>
+	<meta name="viewport" content="width=device-width,initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<style>
+		button{
+			width: 300px;
+			height: 50px;
+			}	
+
+			.selected{
+				background:blue;
+			}
+
+			.slider-container {
+				background: #f2ece0;
+  -webkit-border-radius: 7px;
+  -moz-border-radius: 7px;
+  -ms-border-radius: 7px;
+  -o-border-radius: 7px;
+  border-radius: 7px;
+  -webkit-box-shadow: inset 1px 1px 0.3em rgba(0, 0, 0, 0.5);
+  -moz-box-shadow: inset 1px 1px 0.3em rgba(0, 0, 0, 0.5);
+  box-shadow: inset 1px 1px 0.3em rgba(0, 0, 0, 0.5);
+
+  float: left;
+  overflow: hidden;
+  padding: 0 38px;
+  position: relative;
+  width: 61%;
+}
+.slider-container .wrapper.touch-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.slider-container .wrapper.touch-scroll .slider {
+  width: auto;
+  white-space: nowrap;
+}
+li{
+	list-style-type: none;
+}
+
+.slider-container .wrapper.touch-scroll .slider li {
+  float: none;
+  display: inline-block;
+  }
+
+#showEvents{
+	height:200px;
+	width: 200px;
+	border: 2px solid;
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+}
+		
+		</style>
+</head>
+<body>
+
+	<div class="slider-container" data-bind="iScrollHandler: data.DataSource, selected: data.Value">
+           			<div class="wrapper">
+                <div class="slider">
+                    <ul class="thelist" data-bind="foreach: data.DataSource">
+						<li data-bind="css: {selected : $data.Value === $parent.data.Value()}">
+							<button data-bind="text: $data.Key, tap: function(){$parent.showSelected($data.Value);}"></button>
+                        </li>
+                    </ul>
+                </div>
+            </div>        </div>
+
+			<div style="clear:both"></div>
+			<div data-bind="text: data.Value"></div>
+	<hr/>
+	<h2>Single Tap Example</h2>
+	<div data-bind="text:firstName"></div>
+	<button data-bind="tap:setFirstName">TouchButton</button>
+	<h3>Events:</h3>
+	<button data-bind="tap: clearTouchEvents" >Clear</button>
+
+	<div id="showEvents" data-bind="foreach: touchEvents">
+		<div data-bind="text: $data"></div>
+	</div>
+	<hr/>
+		<script src="http://code.jquery.com/jquery-1.9.0.min.js"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/knockout/2.2.0/knockout-min.js"></script>
+	<script src="ScrollerBindingHandler.js"></script>
+	<script>
+		ko.bindingHandlers.tap = {
+			init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+				"use strict";
+				var currentElement;
+	
+				if ('ontouchstart' in window) {
+					$(element).on('touchstart', function(evt){
+						evt.stopPropagation();
+						currentElement = this;
+
+						var onTouchMove = function(e){
+							currentElement = document.elementFromPoint(e.pageX, e.pageY);
+							bindingContext.$root.addTouchEvent("onTouchMove");
+
+						};
+						
+						var onTouchEnd = function(){
+							if(element === currentElement){
+								currentElement = null;
+								//execute the function attached to the 'tap' handler
+								valueAccessor().call();
+								bindingContext.$root.addTouchEvent("tapped");
+
+							}
+
+							//dispose!!!
+							$(element).off('touchmove', onTouchMove);
+							$(element).off('touchend', onTouchEnd);
+						};
+
+						$(element).on('touchmove', onTouchMove);
+						$(element).on('touchend', onTouchEnd);
+					});
+					
+					} else {
+					//this will bind click to element with the passed in function:
+					ko.applyBindingsToNode(element, { click: valueAccessor() });
+				}			
+			}		
+		};
+		$(function(){
+			function ViewModel(){
+				var self = this;
+				self.firstName = ko.observable("Steve");
+				self.setFirstName = function(){
+					if(self.firstName() === "Steve"){
+						self.firstName("Hey Steve!");
+					}
+					else{
+						self.firstName("Steve");
+					}
+				};
+
+				self.touchEvents = ko.observableArray();
+				self.addTouchEvent = function(touchEvent){
+					self.touchEvents.push(touchEvent);
+				}
+				self.clearTouchEvents = function(){
+					self.touchEvents([]);
+				}
+
+				self.data = {};
+				self.data.Value = ko.observable('1');
+				self.data.DataSource = ko.observableArray([
+					{Key:'This is some long text', Value:'1'}, 
+					{Key:'This is some long text', Value:'2'},
+					{Key:'This is some long text', Value:'3'},
+					{Key:'This is some long text', Value:'4'},
+					{Key:'This is some long text', Value:'5'},
+					{Key:'This is some long text', Value:'6'}
+				]);
+
+				self.showSelected = function(data){
+					self.data.Value(data);				}
+			};
+			ko.applyBindings(new ViewModel());
+		});
+	</script>
+</body>
+</html>
