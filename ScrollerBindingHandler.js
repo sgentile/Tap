@@ -15,10 +15,7 @@ ko.bindingHandlers.iScrollHandler = {
                 wrapperId = $wrapper.attr('id');
             }
 
-            //myScroll = new iScroll(wrapperId, { vScroll: false, hScrollbar: false, onBeforeScrollStart: null }); //this caused symptoms of critical bug 4058 - turning this off - do not enable!
-            if (isTouch) {
-              $wrapper.addClass("touch-scroll");
-            }
+            $wrapper.addClass("touch-scroll");
 
            
             if ($prevScroller) {
